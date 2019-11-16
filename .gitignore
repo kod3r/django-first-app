@@ -1,6 +1,9 @@
 # Created by https://www.gitignore.io/api/web,python,django,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=web,python,django,visualstudiocode
 
+### Current project ###
+.envr
+
 ### Django ###
 *.log
 *.pot

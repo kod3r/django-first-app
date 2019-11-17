@@ -1,37 +1,31 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404
+from django.views import generic
+
+# https://docs.djangoproject.com/en/2.2/topics/class-based-views/generic-display/#generic-views-of-objects
 
 from .models import Question, Choice
 
-# Create your views here.
-def index(request):
-    latest_question_list = Question.objects.order_by("-pub_date")[:5]
-    context = {"latest_question_list": latest_question_list}
-    # template = loader.get_template("polls/index.html")
-    # return HttpResponse(template.render(context, request))
 
-    # REFACTORED: https://docs.djangoproject.com/en/2.2/topics/http/shortcuts/#module-django.shortcuts
-    return render(request, "polls/index.html", context)
+class IndexView(generic.ListView):
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
+    # https://docs.djangoproject.com/en/2.2/topics/class-based-views/generic-display/#making-friendly-template-contexts
 
-
-def detail(request, question_id):
-    # V1: return HttpResponse(f"Checking for question: {question_id}.")
-
-    # V2: try:
-    # V2:     question = Question.objects.get(pk=question_id)
-    # V2: except Question.DoesNotExist:
-    # V2:     raise Http404("Question does not exist!")
-    # V2: return render(request, "polls/detail.html", {"question": question})
-
-    # V3:
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, "polls/detail.html", {"question": question})
+    # https://docs.djangoproject.com/en/2.2/topics/class-based-views/generic-display/#dynamic-filtering
+    def get_queryset(self):
+        return Question.objects.order_by("-pub_date")[:5]
 
 
-def results(request, question_id):
-    response = "Looking at results of question %s."
-    return HttpResponse(response % question_id)
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = "polls/detail.html"
+
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = "polls/results.html"
 
 
 def vote(request, question_id):
@@ -55,8 +49,3 @@ def vote(request, question_id):
         # Always return an HttpResponseRedirect after successfully dealing with POST data.
         # This prevents data from being posted twice if a user hits the Back button.
         return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
-
-
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, "polls/results.html", {"question": question})
